@@ -9,12 +9,15 @@
       path: /programs/product-offerings.html
     - title: Program Starting Point
       path: /programs/program-starting-point.html
-    - title: Private vs Public Programs
-      path: /programs/private-vs-public-programs.html
-    - title: Parent/Child Programs
-      path: /programs/parent-child-programs.html
-    - title: Password Best Practices
-      path: /programs/passwords.html
+    - title: Program Types
+      path: /programs/program-types.html
+      items:
+        - title: Private vs. Public Programs
+          path: /programs/private-vs-public-programs.html
+        - title: Parent/Child Programs
+          path: /programs/parent-child-programs.html
+        - title: VDP vs. BBP
+          path: /programs/vdp-vs-bbp.html
     - title: Using Markdown
       path: /programs/using-markdown.html
     - title: Running a Good Program
@@ -167,6 +170,8 @@
       path: /programs/api-tokens.html
     - title: Assembla
       path: /programs/assembla-integration.html
+    - title: Azure DevOps
+      path: /programs/azure-devops-integration.html
     - title: Bugzilla
       path: /programs/bugzilla-integration.html
     - title: Freshdesk
@@ -283,5 +288,7 @@
       path: /programs/import-vulnerabilities.html
     - title: IP Allowlists
       path: /programs/ip-allowlists.html
+    - title: Password Best Practices
+      path: /programs/passwords.html
     - title: Slack Shared Channels
       path: /programs/slack-shared-channels.html

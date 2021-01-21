@@ -9,11 +9,39 @@ HackerOne offers a bi-directional ServiceNow integration that enables you to syn
 > **Note:** This integration is only available to Enterprise programs.
 
 ### Set up
-To set up the bi-directional integration between HackerOne and your ServiceNow instance, you’ll need to follow these 4 steps:
-1. [Configure incoming requests in your ServiceNow instance](#configure-incoming-requests)
-2. [Configure the integration on HackerOne](#configure-on-hackerone)
-2. [Configure outgoing requests in your ServiceNow instance](#configure-outgoing-requests)
-4. [Configure a “close report” request from ServiceNow to HackerOne](#configure-close-report-event)
+To set up the bi-directional integration between HackerOne and your ServiceNow instance, you’ll need to follow these 5 steps:
+1. [Configure OAuth for your ServiceNow instance](#configure-oauth)
+2. [Configure incoming requests in your ServiceNow instance](#configure-incoming-requests)
+3. [Configure the integration on HackerOne](#configure-on-hackerone)
+4. [Configure outgoing requests in your ServiceNow instance](#configure-outgoing-requests)
+5. [Configure a “close report” request from ServiceNow to HackerOne](#configure-close-report-event)
+
+### Configure Oauth
+
+1. Navigate to **System OAuth > Application Registry** in your ServiceNow settings.
+
+![servicenow-23](./images/servicenow-23.png)
+
+2. Click **new** to create a new Application Registry.
+
+![servicenow-24](./images/servicenow-24.png)
+
+3. Click **Create an OAuth API endpoint for external clients**
+
+![servicenow-25](./images/servicenow-25.png)
+
+4. Enter these values for these fields:
+
+Field | Value
+----- | -----
+Name | HackerOne
+Client ID | This is auto generated. Copy this value, you'll need this later when setting up the Oauth connection.
+Client Secret | Enter a secret key. Later in the process when setting up the OAuth connection you'll need this key again.
+Redirect URL | https://hackerone.integration-authentication.com/oauth2/token
+
+![servicenow-26](./images/servicenow-26.png)
+
+5. Click **Submit**. 
 
 ### Configure Incoming Requests
 Configuring incoming requests requires you to post to a custom REST API endpoint in ServiceNow. This will enable you to add comments from HackerOne to your ServiceNow instance.
@@ -92,7 +120,9 @@ HTTP Method | POST
 ```
 Make sure you enter the correct table name, as in this case, it's *incident*.
 
-9. Copy the full URL to your endpoint and save it to be used for later. <ul><li>The full URL to the `/hackerone/new_comment` endpoint is required to set up the HackerOne integration. The namespace can be found from within the HackerOne Scripted REST API you just created, in the Resources tab underneath the Resource path column. Combine this with your instance URL found in the address bar to get the full URL.<li>As shown in the images below, this would be: https://dev100796.service-now.com/api/514345/hackerone/new_comment.
+9. Click **Submit**.
+
+10. Copy the full URL to your endpoint and save it to be used for later. <ul><li>The full URL to the `/hackerone/new_comment` endpoint is required to set up the HackerOne integration. The namespace can be found from within the HackerOne Scripted REST API you just created, in the Resources tab underneath the Resource path column. Combine this with your instance URL found in the address bar to get the full URL.<li>As shown in the images below, this would be: https://dev100796.service-now.com/api/514345/hackerone/new_comment.
 
 ![servicenow-6](./images/servicenow-6.png)
 ![servicenow-7](./images/servicenow-7.png)
@@ -114,7 +144,7 @@ To set up the integration on HackerOne:
 Field | Details
 ----- | -------
 ServiceNow Instance URL | Enter the full URL to your ServiceNow instance, for example it could be: https://my-instance.service-now.com/
-Username & Password | Enter the credentials for a user that has access to the ServiceNow instance.
+Client ID & Client secret | Enter the `Client ID` and `Client secret` from step 4 in [Configure OAuth](#configure-oauth)
 
 5. Configure data mapping from HackerOne reports to ServiceNow incidents. This uses the API of both systems to retrieve fields that are allowed to be used for these objects. For example, you could map the HackerOne report title to the ServiceNow incident short description.
 
@@ -130,12 +160,7 @@ Username & Password | Enter the credentials for a user that has access to the Se
 
 8. Click **Next**.
 9. Copy the public listener URL in the configuration wizard.
-10. Go back to ServiceNow and open the Outbound REST Message,
-11. Paste the copied public listener URL in the **Endpoint** field.
-
-![servicenow-21](./images/servicenow-21.png)
-
-12. Click **Enable** to enable the integration.
+10. Click **Enable** to enable the integration.
 
 ![servicenow-22](./images/servicenow-22.png)
 
@@ -252,11 +277,11 @@ Field | Value
 Name | Close Report
 Endpoint | The Public ServiceNow URL visible in configuration wizard on the HackerOne platform
 HTTP Method | POST
-Authentication Type | No authentication
+Authentication Type | Inherit from parent
 
 5. Enter this in the **Content** field in the HTTP Request tab:
 ```
-{"event_name":"close_report","element_id":"${sys_id}"}
+{"event_name":"close_report","element_id":"${sys_id}","hackerone_report_state": "${hackerone_report_state}"}
 ```
 
 6. Add these two HTTP Headers on the same HTTP Request tab:
@@ -287,6 +312,9 @@ Filter Conditions | State: changes to : Closed
    try {
      var r = new sn_ws.RESTMessageV2('HackerOne', 'Close Report');
      r.setStringParameterNoEscape('sys_id', current.sys_id);
+     // Set the HackerOne report state.
+     // Possible state changes can be found here https://api.hackerone.com/core-resources/#reports-change-state
+     r.setStringParameterNoEscape('hackerone_report_state', 'resolved');
      var response = r.execute();
    }
    catch(ex) {
